@@ -7,9 +7,9 @@
 ### ------------ Load data and package -----------------------------------------
 ### Load data and package
 require(vegan)
-werra_sp <- read.table(file.path(datadir, 'werra_sp.csv'), sep = ';', 
+werra_sp <- read.table('https://raw.githubusercontent.com/rbslandau/statistics_multi/master/Data/River_sp.csv', sep = ';', 
                        header = TRUE, row.names = 1)
-werra_env <- read.table(file.path(datadir, 'werra_env.csv'), sep = ';')
+werra_env <- read.table('https://raw.githubusercontent.com/rbslandau/statistics_multi/master/Data/River_env.csv', sep = ';', header = TRUE)
 
 
 ### ------------ Distance matrix ----------------------------------------------
@@ -17,10 +17,9 @@ werra_env <- read.table(file.path(datadir, 'werra_env.csv'), sep = ';')
 range(werra_sp)
 range(werra_sp^0.5)
 range(werra_sp^0.25)
-# We use a double root transformation
+# We use a double root transformation to reduce the range of the data
 dist_werra <- vegdist(werra_sp^0.25, method = 'bray')
-
-
+# otherwise highly abundant taxa would dominate the distance measures
 
 ### ------------ NMDS ----------------------------------------------------------
 ### Run NMDS
@@ -30,17 +29,17 @@ op <- ordiplot(nmds, type = 'n')
 
 # points
 cols = c('red', 'green')
-points(nmds, cex = 2, pch = 16, col = cols[werra_env$position])
+points(nmds, cex = 2, pch = 16, col = cols[werra_env$Position])
 
 # decoration
-ordispider(nmds, groups = werra_env$position, label = TRUE)
-ordihull(nmds, groups = werra_env$position, lty = 'dotted')
-legend("bottomleft", pch = 16, col = cols, legend = levels(werra_env$position))
+ordispider(nmds, groups = werra_env$Position, label = TRUE)
+ordihull(nmds, groups = werra_env$Position, lty = 'dotted')
+legend("bottomleft", pch = 16, col = cols, legend = levels(werra_env$Position))
 # upstream and downstream communities are well separated (indicates an effect!)
 # spread may be different (lower for upstream section)
 
 ### ------------ PERMANOVA -----------------------------------------------------
-pmv <- adonis(werra_sp^0.25 ~ position, data = werra_env, 
+pmv <- adonis(werra_sp^0.25 ~ Position, data = werra_env, 
               permutations = 999, 
               method = 'bray')
 pmv
@@ -48,6 +47,7 @@ pmv
 # the position explains 30.7% of variance
 
 # plot permuted F-values
+densityplot(permustats(pmv))
 plot(density(pmv))
 
 ## But are the assumptions met?
@@ -56,16 +56,16 @@ nmds <- metaMDS(dist_werra)
 op <- ordiplot(nmds, type = 'n')
 # points
 cols = c('red', 'green')
-points(nmds, cex = 2, pch = 16, col = cols[werra_env$position])
+points(nmds, cex = 2, pch = 16, col = cols[werra_env$Position])
 # decoration
-ordispider(nmds, groups = werra_env$position, label = TRUE)
-ordihull(nmds, groups = werra_env$position, lty = 'dotted')
+ordispider(nmds, groups = werra_env$Position, label = TRUE)
+ordihull(nmds, groups = werra_env$Position, lty = 'dotted')
 legend("bottomleft", pch = 16, col = cols, legend = levels(werra_env$position))
-# graphically we would say that upstream has lower spread then downstream
+# graphically we would say that upstream has a slightly lower spread then downstream
 
 
 ### ------------ Distance based dispersion test -------------------------------
-bd <- betadisper(dist_werra, werra_env$position)
+bd <- betadisper(dist_werra, werra_env$Position)
 bd
 # also an eigenvalue based method
 
@@ -78,13 +78,13 @@ anova(bd)
 
 # permutaion test
 permutest(bd)
-# We cannot find a statistically different dispersion 
+# We cannot find a statistically significantly different dispersion 
 # -> assumption of homogeneity is met
 
 
 
 ### ------------ SIMPER --------------------------------------------------------
-sim <- simper(werra_sp^0.25, group=werra_env$position)
+sim <- simper(werra_sp^0.25, group=werra_env$Position)
 summary(sim)
 # contr :   contribution to dissimilarity between upstream and downstream
 # sd    :   standard deviation of contribution (is the species response consitent?)
