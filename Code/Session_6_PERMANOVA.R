@@ -1,13 +1,12 @@
 ###################################################################################
 # Script for Session 6 of the course: Applied multivariate Statistics with R  	  #
-#						by Eduard Szöcs,		WS 2017/18							  #
-# 						PERMANOVA					  		  	  				  #
+#		  created by Eduard Szöcs,	 modified by RBS, 	WS 2017/18				  #
+# 						        PERMANOVA					  		  	  		  #
 ###################################################################################
 
 ### ------------ Load data and package -----------------------------------------
 ### Load data and package
 require(vegan)
-datadir <- "http://edild.github.io/multistat/"
 werra_sp <- read.table(file.path(datadir, 'werra_sp.csv'), sep = ';', 
                        header = TRUE, row.names = 1)
 werra_env <- read.table(file.path(datadir, 'werra_env.csv'), sep = ';')
