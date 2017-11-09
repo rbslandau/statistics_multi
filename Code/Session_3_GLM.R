@@ -372,7 +372,7 @@ CVbinary(frog.glm3, nfolds= 10)
 # Maindonald (2010, chapter 8) and Fox & Weisberger (2011, chapter 6)
 
 #########################################
-#   		 Exercise 5  				  #
+#   		 Exercise  				  #
 #########################################
 
 # Evaluate which environmental variables are most important for the occurence of the Bradypus?

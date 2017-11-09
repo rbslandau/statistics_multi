@@ -505,7 +505,7 @@ coefs
 # Model assessment with k-fold cross validation #
 #################################################
 # function provided by Kabacoff 2011:214
-# prediction accuracy is validated using cross validation, execute all code below to set the function
+# prediction accuracy via cross validation, execute all code below to set the function
 # this makes only sense for models where CV has not been employed in model selection
 # (i.e.not meaningful for lasso model above)
 shrinkage <- function(fit, k = 10){
@@ -537,6 +537,8 @@ shrinkage(mod_5)
 # same data set is used in validation
 # nevertheless, it is useful for identifying the correct level of flexibility
 # as implemented above
+
+
 
 #####################################
 # Relative importance of a variable #
@@ -572,7 +574,7 @@ hier.part(data_oc2$E100, data_env[ , !(names(data_env) %in% "LAT" )],
 # the other one a spurious effect, we could remove one of them before analysis
 
 ################################################################################
-# Exercise 4 : For an effective environmental protection scheme you need to know 
+# Exercise: For an effective environmental protection scheme you need to know 
 #  causes of pollution. 
 # In this example, the aim is to find the variables that are most important to 
 # predict the SO2 air concentrations.

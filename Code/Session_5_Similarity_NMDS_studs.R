@@ -21,7 +21,7 @@ mat1
 
 
 ##############
-# Exercise 8 #
+# Exercise  #
 ##############
 # a) Compute the Bray-Curtis, Euclidean and Jaccard dissimilarities/distances. 
 # What are the differences between the coefficients regarding the relationship 
@@ -158,7 +158,7 @@ par(cex=2)
 ordirgl(specnmds2, type="t")
 
 #############
-#Exercise 9 #
+#Exercise   #
 #############
 # Conduct a NMDS for the lichen data (varespec (data is in vegan package)) 
 # and examine differences in the results for the euclidean and bray-curtis distance

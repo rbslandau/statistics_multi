@@ -305,7 +305,7 @@ arrows(0, 0, var.sc[, 1], var.sc[, 2], length=0, lty=1, col="red")
 # variables in RDA
 
 ##################
-#   Exercise 7   #
+#   Exercise     #
 ##################
 # Conduct a complete RDA for the RIKZ data set (taken from Zuur et al. 2007).
 # How many RDA axes are needed? 

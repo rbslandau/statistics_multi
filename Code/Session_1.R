@@ -30,7 +30,10 @@ pop2 <- runif(1000, min = 50, max = 135)
 mean(pop1)
 mean(pop2)
 # and clearly a very different distribution
-par(mfrow = c(1,2))
+par(mfrow = c(1,2), cex = 1.2)
+# set parameters for following plot, in this case increase font size
+# with cex and plot two figures beside each other with mfrow
+# please check ?par() for explanation on the commands used
 hist(pop1)
 hist(pop2)
 
@@ -39,10 +42,10 @@ hist(pop2)
 # with biometric measurements of a sample of the population 
 no_sam1 <- 30
 no_sam2 <- 30
-set.seed(80)
+set.seed(50)
 samp1 <- sample(pop1, no_sam1)
 mean(samp1)
-set.seed(55)
+set.seed(30)
 samp2 <- sample(pop2, no_sam2)
 mean(samp2)
 par(mfrow=c(1,2))
@@ -73,7 +76,7 @@ perm_vec <- numeric(length = 10000)
 # Legendre & Legendre (2012) suggest to use at least 10,000 permutations
 # for inference, especially when aiming at publishing the results 
 N <- nrow(datafr)
-set.seed(300)
+set.seed(400)
 for(i in seq_len(length(perm_vec) - 1)) # loop runs 9999 times
 	{
 	  perm <- shuffle(N)
@@ -89,10 +92,22 @@ par(cex = 1.2, mfrow = c(1,1))
 hist(perm_vec, main = "", breaks = 20, xlab = expression("Mean difference (Pop1 - Pop2)"))
 rug(perm_vec[10000], col = "red", lwd = 2, ticksize = 0.5)
 
-# compute permutation p-value
+# compute permutation p-value for one sided test
 Dbig <- sum(perm_vec >= perm_vec[10000])
 Dbig/length(perm_vec)
 # permutation test identifies statistical significant difference
+# but only for one-sided test!
+# for two-sided test
+Dbig2 <- sum(abs(perm_vec) >= perm_vec[10000])
+Dbig2/length(perm_vec)
+# two sided test not significant
+# note that you should more or less always use a two-sided test
+# see: Lombardi C.M. & Hurlbert S.H. (2009) 
+# Misprescription and misuse of one-tailed tests. Austral Ecology 34, 447–468.
+
+# direct implementation of the permutational t-test
+library(coin)
+pvalue(oneway_test(Size ~ Pop_type, data = datafr, distribution=approximate(B=9999)))
 
 ##############################
 # Classical approach: t-test #
@@ -117,10 +132,31 @@ plot(w ~ Pop_type, data = datafr)
 # the figure displays the boxplots shifted to a median of zero
 # variances clearly differ
 
+# if we want to send the output to a new the graphics device we use:
+quartz() 
+# please note: on Windows OS use windows(), on Linux x11()
+
+# although the boxplot is widely used there are interesting alternatives 
+# such as the beanplot
+# for an introduction see the article see:
+# 
+# Peter Kampstra 2008: Beanplot: A Boxplot Alternative for Visual Comparison of Distributions. 
+# Journal of Statistical Software, Code Snippets. 28 (1): 1-9. 
+# Freely available at http://www.jstatsoft.org/v28/c01/
+# 
+# you need to install the package beanplot in order to use beanplots:
+# install.packages("beanplot")
+# load package
+library(beanplot)
+# use beanplot
+beanplot(w ~ Pop_type, data = datafr) 
+# gives single observations (white lines), median
+# and shows the estimated density function
+
 # although we know that the assumption of normality is violated,
 # we run a t-test anyways, accounting for different variances
 (body_t2 <- t.test(Size ~ Pop_type, data = datafr, var.equal = FALSE))
-# no statistical significance, p-value two-fold higher than for permutation
+# no statistical significance, p-value slightly higher than for permutation
 
 # how would we check for normal distribution?
 
@@ -147,10 +183,9 @@ qreference(datafr$Size[datafr$Pop_type =="Samp1" ], nrep = 8)
 
 qqnorm(datafr$Size[datafr$Pop_type =="Samp2" ], datax = TRUE)
 qqline(datafr$Size[datafr$Pop_type =="Samp2" ], datax = TRUE)
-# slightly stronger deviation from line
+# stronger deviation from line
 qreference(datafr$Size[datafr$Pop_type =="Samp2" ], nrep = 8) 
-# despite we sampled from a uniform distribution,
-# the deviation seems still moderate
+# deviation is conspicuous compared to samples from normal distribution
 
 # Another option to check normality is the histogram
 # histograms can also be used to check for
@@ -168,7 +203,7 @@ hist(datafr$Size[datafr$Pop_type =="Samp2" ], breaks = 15, probability = TRUE, x
 dens <- density(datafr$Size[datafr$Pop_type =="Samp2" ])  
 # estimates the density using a given smoother
 lines(dens) 
-# and of a normal distribution with the same mean and s
+# and of a normal distribution with the same mean and standard deviation
 dens2 <- dnorm(0:140, mean = mean(datafr$Size[datafr$Pop_type =="Samp2" ]), sd = sd(datafr$Size[datafr$Pop_type =="Samp2" ]))
 lines(dens2, col = "red") 
 # the empirical cumulative distribution function would be calculated and plotted with
@@ -177,7 +212,7 @@ lines(dens2, col = "red")
 
 # provides mean, median and quartiles
 summary(datafr$Size[datafr$Pop_type =="Samp2" ])
-
+# close graphics window
 dev.off()
 
 ###########################
@@ -191,11 +226,13 @@ dev.off()
 
 # set seed for random number generator. This makes the example reproducible
 set.seed(3300)
-# We draw 15 observations from a binomial distribution with each of 5 trials and the probability of success
+# We draw 15 observations from a binomial distribution 
+# with each of 5 trials and the probability of success
 x <- rbinom(15, 5, 0.6) 
 shapiro.test(x) 
 # null hypothesis is not rejected
-# Also the shapiro.test depends highly on sample size (rejecting H0 to often with big sample sizes)
+# Also the shapiro.test depends highly on sample size
+# (rejecting H0 to often with big sample sizes)
 
 qreference(x, nrep = 8) 
 #deviation is quite obvious
@@ -207,27 +244,202 @@ qreference(x, nrep = 8)
 ########################
 # Bootstrapping of CI  #
 ########################
+
+# finally, we boostrap confidence intervals for the 
+# first sample population
 library(boot)
-dasboot <- boot(datafr[datafr$Pop_type=="Samp1", 1], function(x, i){mean(x[i])}, 10000,
-                           parallel="multicore", ncpus=8)
-plot(dasboot)
+boot_samp1 <- boot(datafr[datafr$Pop_type=="Samp1", 1], 
+					function(x, i)
+								 {
+								  mean(x[i])
+								  }, 
+					10000, parallel="multicore", ncpus=8)
+# on Windows set parallel ="no" and remove 'ncpus = 8' 					
+# plot distribution of bootstrapped statistic and qqplot
+plot(boot_samp1)
+# normally distributed
+
+# frequency plot
 par(cex = 1.4)
-hist(dasboot$t, breaks = 100, main = "", xlab = "t*")
-boot.ci(dasboot, type = "bca")
-# adjusted bootstrap percentile (BCa)
-# add confidence intervals to plot
+hist(boot_samp1$t, breaks = 100, main = "", xlab = "t*")
+# compute adjusted bootstrap confidence interval
+(cis <- boot.ci(boot_samp1, type = "bca"))
+# add to plot
+lines(x = c(cis$bca[4], cis$bca[5]), y = c(300, 300), col = "red", lwd =2)
+mtext(text = c("95% Confidence interval"), side = 3, col = "red", cex = 1.2 )
 
+###########################################
+# Demonstration Simple linear regression  #
+###########################################
 
+library(vegan)
+data("varechem")
+# we use some soil data to demonstrate how to conduct a linear regression analysis
+?varechem
+head(varechem)
+str(varechem)
 
-# directly implemented
-library(coin)
-pvalue(oneway_test(Size ~ Pop_type, data = datafr, distribution=approximate(B=9999)))
+# we check the relationship between K and S
+# linear regression for data
+mod_1 <-lm(S ~ K, data = varechem) 
+# regression for S explained by K (as expressed with the ~)
+summary.lm(mod_1)
+# this function gives an overview on residuals and coefficients. 
+
+# plot relationship
+plot(S ~ K, data = varechem)
+# and regression line
+par(las = 1,cex = 1.8)
+plot(S ~ K, data = varechem, ylab="S mg/kg", xlab="K mg/kg")
+# we extract the lines from the regression model with the function abline()
+abline(mod_1, lwd = 2)
+
+##for publication style output use
+library(memisc)
+mtable(mod_1)
+# there are various arguments that can be adjusted for this function
+
+### model checking
+# can also be used for anova
+par(mfrow = c(1, 3))
+plot(mod_1, which = 1:3)
+# the plots 1 and 3 can be used to spot departure from the assumption of homoscedasticity
+# plot 2 is the quantile-quantile plot and serves as a diagnosis tool to check for normality of residuals, 
+# plot 3 is similar to plot 1 but uses standardized residuals. 
+# Standardized residuals are obtained by dividing each residual by its standard deviation. 
+# They show (1) how many standard deviations any point is away from the fitted regression model and 
+# (2) have constant variance even if residuals have nonconstant variance (due to leverage). 
+# In the absence of leverage points plot 1 and 3 are very similar. 
+# Standardized residuals can also be used to check for outliers. 
+# Points that are more than 2 standard deviations away from the regression line may 
+# be considered as outlier (see Sheater 2009: p.60).
+
+# for more exploration of residuals, see:
+# https://www.r-bloggers.com/visualising-residuals/
+
+# if you feel insecure regarding the evaluation of deviation from normality, 
+# the qreference function is helpful and allows comparison with data drawn from a normal distribution
+qreference(residuals(mod_1), nrep = 8)
+# nothing to worry
+
+# Plots on influence of specific points
+par(mfrow = c(1,3))
+plot(mod_1, which = 4:6)
+# these 3 plots display deliver information on influential observations.
+# the second plot is usually the first to consider
+# if any observation is inside the boundaries of Cooks distance
+# we don't need to worry about influential points 
+
+# calculation of two times the average hat value
+# 2* p/n - see lecture
+2*2/nrow(varechem) 
+# gives double the average hat value and 
+# plot 2 and 3 allow checking for influential points with a hat value larger than this average hat value. 
+
+dfbeta(mod_1) 
+# gives the the change in the model parameter when the respective point is omitted
+# leave-one-out regression
+# example
+mod_2 <-lm(S ~ K, data = varechem[-1, ]) 
+summary(mod_1)
+summary(mod_2)
+dfbeta(mod_1)[ 1,]
+# dfbeta provides the difference in the coefficients 
+# between the models 1 and 2
+
+###########################
+#   some helper functions #
+###########################
+### Extracting results from model
+coefficients(mod_1)
+# gives the coefficients of the model
+
+fitted(mod_1)
+# fitted values (predictions for the x)
+
+confint(mod_1)
+# confidence intervals for the parameters
+
+residuals(mod_1)
+# model residuals
+
+rstandard(mod_1)
+# standardized residuals
+
+anova(mod_1)
+# gives the analysis of variance table with the explained variance for the variables 
+# and the unexplained variance as residuals
+
+str(mod_1) 
+# structure of fitted model object, shows what can be extracted from model
 
 ###################################
-# Simple linear regression model  #
+# Bootstrapping regression models #
 ###################################
 
+library(car) 
+# we use a convenient function to produce the confidence interval
+# first for the residual method (fixed x resampling)
+set.seed(30)
+boot_mod_res <- Boot(mod_1, f = coef, R = 9999, method = c("residual"))
+confint(boot_mod_res, level = .95, type = "bca")
+confint(mod_1)
+# bootstrapped confidence intervals for the parameters
+# differ slightly for intercept, can be regarded as more exact
 
+# bootstrapping cases (random x resampling)
+set.seed(30)
+boot_mod_case <- Boot(mod_1, f = coef, R = 9999, method = c("case"))
+confint(boot_mod_case, level = .95, type = "bca")
+confint(boot_mod_res, level = .95, type = "bca")
+confint(mod_1)
+# bootstrapping cases provides most narrow residuals
+
+# see Fox (2015):647ff and an online Appendix to Fox & Weisberger (2010): https://socserv.socsci.mcmaster.ca/jfox/Books/Companion/appendix/Appendix-Bootstrapping.pdf for further details
+
+######################################
+# Cross-validating regression models #
+######################################
+
+# we compute the cross-validated Mean square prediction error
+# that can be used to compare models, may not be most interesting for 
+# the simple linear regression model
+cv.lm(data = varechem, form.lm = formula(S ~ K), m = 5, seed = 30, plotit = "Observed")
+# compare to mean square error from fitted model
+mean(mod_1$residuals^2)
+# prediction error (not surprisingly) higher than model error
+
+# we can also compute a cross-validated version of the R2
+# function provided by Kabacoff 2011:214
+# R2 is validated using cross validation
+# execute all code below to set the function
+# adjust k for k-fold cross-validation
+shrinkage <- function(fit, k = 5){
+  library(bootstrap)
+  theta.fit <- function(x, y){
+    lsfit(x, y)
+  }
+  theta.predict <- function(fit, x){
+    cbind(1, x) %*% fit$coef
+  }
+  x <- fit$model[ , 2:ncol(fit$model)] 
+  y <- fit$model[ , 1]
+  results <- crossval(x, y, theta.fit, theta.predict, ngroup = k) 
+  r2 <- cor(y, fit$fitted.values)^2 
+  r2cv <- cor(y, results$cv.fit)^2 
+  cat("Original R-square =", r2, "\n")
+  cat(k, "Fold Cross-Validated R-square =", r2cv, "\n") 
+  cat("Change =", r2 - r2cv, "\n") 
+}
+#### end of function
+
+#calculate for model 1
+shrinkage(mod_1) 
+# r2 shrinked by about 5%
+
+############################
+# Load data for Exercises  #
+############################
 
 # now we load a file from the course website
 read.table("http://www.uni-koblenz-landau.de/en/campus-landau/faculty7/environmental-sciences/landscape-ecology/Teaching/possum.csv")
@@ -272,207 +484,50 @@ save(pos_dat, file = "Possum.Rdata")
 # load("Possum.Rdata")
 
 # Finally, you could conventionally download the file to your local harddrive and read it from there:
-# read.csv2("/Users/ralfs/Downloads/Possum.csv") # would also work if adjusted to your path
+# read.csv2("/Users/ralfs/Downloads/Possum.csv") 
+# would also work if adjusted to your path
 # read.csv and read.csv2 are different functions for reading data frames 
 # that have predefined options for csv files
 # The most general function is read.table, were you have to define the format of your data
 # (header, separator, decimal point, ...)
 
-##########################
-### Data handling
-##########################
+###############################################################
+# Exercise: Imagine that we would be interested whether       #
+# male and female possums differ in their total length		  #
+# Choose a statistical approach that allows to      			  #
+# answer this question and compare the results for the 		  #
+# classical and simulation-based approach  					  #
+# Inspect the data for outliers (and other issues you 	      # 
+# consider necessary) before analysis using exploratory tools #
+###############################################################
+
+
+#################################################################
+# Exercise: Chasing possums can be laborious.   					#
+# An easy way would be to predict their length from footprints.	#
+# Would you recommend to predict the total length of the possum # 
+# from traces of their 	feet in the snow?   						#
+# And is an invasive measurement of the skull width necessary   #
+# or can it be approximated with the head length?				#
+# Choose a statistical approach that allows to      			#
+# answer this question and compare the results for the 		  	#
+# classical and simulation-based approach  					  	#
+# Conduct complete model diagnostics							#
+#################################################################
 
 
 
 
-##########################
-### Exploratory analysis #
-##########################
 
-###############################################
-# Imagine that we would be interested whether #
-# possums differ in their total length		  #
-# between Victoria and other states		 	  #
-###############################################
-
-# we first inspect the total length variable
-plot(pos_dat$totlngth) 
-# overview
-
-# polish plot
-par(cex = 1.4)
-# set parameters for following plot, in this case increase font size
-# please check ?par() for explanation on the commands used
-plot(pos_dat$totlngth, las = 1, cex.lab = 1.3, 
-     ylab = "Total length [cm]", main = "Data overview") 
-     # scatter plot
-
-## Boxplot of Total Length
-# can be used to screen for outliers
-boxplot(pos_dat$totlngth, las = 1, cex.lab = 1.3, 
-        ylab = "Total length [cm]", main = "Data overview")
-
-# how can I save a graph? either use the graphical user interface or use jpeg, png, tiff...
-jpeg("Boxplot.jpeg", quality = 100)
-  par(cex = 1.4)
-  boxplot(pos_dat$totlngth, las = 1, cex.lab = 1.3, 
-        ylab = "Total length [cm]", main = "Data overview")
-dev.off()
-# switches off the device (in this case saves the contents to file in wd)
-
-# although the boxplot is widely used there are interesting alternatives such as the beanplot
-# for an introduction see the article see:
-# 
-# Peter Kampstra 2008: Beanplot: A Boxplot Alternative for Visual Comparison of Distributions. 
-# Journal of Statistical Software, Code Snippets. 28 (1): 1-9. 
-# Freely available at http://www.jstatsoft.org/v28/c01/
-# 
-# you need to install the package beanplot in order to use beanplots:
-# install.packages("beanplot")
-# load package
-
-library(beanplot)
-# use beanplot
-beanplot(pos_dat$totlngth) 
-# gives single observations, median and shows the estimated density function
-
-# if we want to send the output to a new the graphics device we use:
-quartz() 
-# please note: on Windows OS use windows(), on Linux x11()
-
-## Now we check for normal distribution and homogeneity of variances
-# we consider homogeneity of variances first, because
-# deviations are more relevant
-
-#############################################
-## 1. Checking for homogeneity of variance  #
-#############################################
-
-plot(totlngth ~ Pop, data = pos_dat)
-# put on same median - code taken from plot.hov function
-# this is only done to ease visual comparison
-med <- tapply(pos_dat$totlngth, pos_dat$Pop, median)
-# compute median of groups
-w <- pos_dat$totlngth - med[pos_dat$Pop]
-# compute distance to median and plot
-# i.e. we move both data sets to 0 to ease comparison of the variance
-plot(w ~ Pop, data = pos_dat)
-# the figure displays the boxplots shifted to a median of zero
-# variance looks a bit higher in Victoria, but is still acceptable
-
-# checking for equality of variances with the F test
-var.test(pos_dat$totlngth[pos_dat$Pop == "Vic"],  pos_dat$totlngth[pos_dat$Pop == "other"])
-var.test(totlngth ~ Pop, data = pos_dat) # equivalent using formula notation
-# both are equal, first one is using the formula notation
-# null hypothesis is not rejected
-
-# overall, we can assume that the variance is homogeneous
-# in case that we conducted a t-test (or other test)
-# and the p value would be close to our alpha
-# we should compare the results to those of a methods
-# that does not require homogeneity of variance
-
-###################################################
-# 2. check for normal distribution using qqplot   #
-###################################################
-
-# we need to check for each sample (i.e. from Victoria and other states)
-# quantile-quantile plot
-qqnorm(pos_dat$totlngth[pos_dat$Pop =="other" ], datax = TRUE)
-# data fit the line relatively well, though some deviation is visible
-qqline(pos_dat$totlngth[pos_dat$Pop =="other" ], datax = TRUE)
-# a function qreference in the DAAG package that produces reference plots 
-# to aid in the evaluation whether the data are normally distributed
-library(DAAG)
-qreference(pos_dat$totlngth[pos_dat$Pop =="other" ], nrep = 8) 
-# nrep controls the number of reference plots
-# data does not look conspicuous
-
-# similarly, you could try to select your qqplot from a range of qq plots to see whether it deviates
-# markably. The code is provided here:
-# http://www.r-bloggers.com/checking-glm-model-assumptions-in-r/
-
-qqnorm(pos_dat$totlngth[pos_dat$Pop =="Vic" ], datax = TRUE)
-# data fit the line relatively well
-qqline(pos_dat$totlngth[pos_dat$Pop =="Vic" ], datax = TRUE)
-qreference(pos_dat$totlngth[pos_dat$Pop =="Vic" ], nrep = 8) 
-# again some deviation is visible, but given that
-# the t-test is relatively robust against violation 
-# of this assumption, we don't need to worry
-
-# Another option to check normality is the histogram
-# but we will rather stick to qq plots in the future
-# histograms can also be used to check for
-# asymmetry in the distribution of variables
-
-hist(pos_dat$totlngth[pos_dat$Pop =="other" ]) 
-# shows frequency
-hist(pos_dat$totlngth[pos_dat$Pop =="other" ], probability = TRUE) 
-# shows probability densities
-
-# add density lines
-dens <- density(pos_dat$totlngth[pos_dat$Pop =="other" ])  
-# estimates the density using a given smoother
-lines(dens) 
-# the empirical cumulative distribution function would be calculated and plotted with
-# ecdf_tot <- ecdf(pos_dat$totlngth[pos_dat$Pop =="other" ])
-# plot(ecdf_tot)
-
-# #Note that different breaks change the outlook!
-
-xlim <- range(dens$x)
-ylim <- range(dens$y) * 1.2 
-# extract minimum and maximum values of density
-# the plot suggests a normal distribution
-hist(pos_dat$totlngth[pos_dat$Pop =="other" ], breaks = 72.5 + (0:5) * 5, probability = TRUE, 
-     xlim = xlim, ylim = ylim, 
-     xlab = "Total length (cm)", main = "") 
-lines(dens) 
-
-# with other breaks it looks rather skewed
-hist(pos_dat$totlngth[pos_dat$Pop =="other" ], breaks = 75 + (0:5) * 5, probability = TRUE, 
-     xlim = xlim, ylim = ylim, 
-     xlab = "Total length (cm)", main = "") 
-lines(dens) 
-
-# effect of the number of breaks
-par(mfrow = c(2,2))
-hist(pos_dat$totlngth[pos_dat$Pop =="other" ], breaks = 5, main = "5 breaks")
-hist(pos_dat$totlngth[pos_dat$Pop =="other" ], breaks = 10, main = "10 breaks")
-hist(pos_dat$totlngth[pos_dat$Pop =="other" ], breaks = 20, main = "20 breaks")
-hist(pos_dat$totlngth[pos_dat$Pop =="other" ], breaks = 50, main = "50 breaks")
-
-# gives a numeric representation of the median and the quartiles
-summary(pos_dat$totlngth[pos_dat$Pop =="other" ])
-
-dev.off()
-# Why are we not using a test to check for normal distribution?
-# The reason is that for small sample sizes normality tests often do not reject 
-# the null hypothesis, though it is wrong (H0: data originates from normal distribution)
-# This example is taken from a blog: http://blog.fellstat.com/?p=61
-
-# set seed for random number generator. This makes the example reproducible
-set.seed(3300)
-# We draw 15 observations from a binomial distribution with each of 5 trials and the probability of success
-x <- rbinom(15, 5, 0.6) 
-shapiro.test(x) 
-# null hypothesis is not rejected
-# Also the shapiro.test depends highly on sample size (rejecting H0 to often with big sample sizes)
-
-qreference(x, nrep = 8) 
-#deviation is quite obvious
-
-# after we have learnt how to check assumptions, you should be able to 
-# complete the exercises below 
-
-# # The following section gives the code for the graphs on the slides - 
+####################################################################################
+# # 						Code for graphs on slides  
 # # if you want to understand a bite more of R, try to understand what is happening, 
 # # also using the help pages. You could also modify some of the values and see what happens
 # # 
 # ## Scatterplot
 # par(mfrow = c(1,3))
 # par(cex = 1.8) # because mfrow resets cex
-# plot(totlngth~hdlngth, data = pos_dat, las = 1, cex.lab = 1.4, 
+# plot(totlngth ~ hdlngth, data = pos_dat, las = 1, cex.lab = 1.4, 
      # ylab = "Total length [cm]", xlab = "Head length [mm]", main = "Scatterplot")
 
 # ## boxplot
@@ -495,274 +550,7 @@ qreference(x, nrep = 8)
 # lines(dens, lwd = 2) 
 # normdens <- dnorm(seq(70, 100, 0.1), mean = mean(pos_dat$totlngth), sd=sd(pos_dat$totlngth))
 # lines(seq(70, 100, 0.1), normdens, lwd = 2, col = "red")
-
-################################################################################
-# Exercise 1: Check whether male and female possums have the same total length #
-################################################################################
-
-## Checking for homogeneity of variance
-plot(totlngth ~ sex, data = pos_dat)
-# put on same median - code taken from plot.hov function
-med <- tapply(pos_dat$totlngth, pos_dat$sex, median)
-# compute median of groups
-w <- pos_dat$totlngth - med[pos_dat$sex]
-# compute distance to median and plot
-plot(w ~ sex, data = pos_dat)
-# looks very similar
-
-# checking for equality of variances with the F test
-var.test(totlngth ~ sex, data = pos_dat)
-# null hypothesis is not rejected
-
-# check for normal distribution using qqplot
-# quantile quantile plot 
-qqnorm(pos_dat$totlngth[pos_dat$sex == "m"], datax = TRUE)
-qqline(pos_dat$totlngth[pos_dat$sex == "m"], datax = TRUE)
-qreference(pos_dat$totlngth[pos_dat$sex == "m"], nrep = 8) 
-# nothing to worry
-qqnorm(pos_dat$totlngth[pos_dat$sex == "f"], datax = TRUE)
-qqline(pos_dat$totlngth[pos_dat$sex == "f"], datax = TRUE)
-qreference(pos_dat$totlngth[pos_dat$sex == "f"], nrep = 8) 
-# looks also ok
-
-# we assume normal distribution and homogeneity of variance and use the t-test
-t.test(pos_dat$totlngth[pos_dat$sex == "m"],  pos_dat$totlngth[pos_dat$sex == "f"], var.equal = TRUE)
-# t.test(totlngth ~ sex, data = pos_dat, var.equal = TRUE)
-# equivalent using formula notation
-
-######################
-# New section: ANOVA #
-######################
-
-# This part of the script generates the plots for the presentation
-# Run this part of the sript and try to understand the idea behind these plots - 
-# use the R help to get more information on the code snippets
-
-# a <- sample(1:50, 20, replace = TRUE)
-# b <- sample(60:70, 20, replace = TRUE)
-# c <- sample(80:150, 20, replace = TRUE)
-# new_rand <- c(a, b, c)
-# dis_dat <- data.frame(Value = new_rand, 
-#                       Group = c(rep("a",20),rep("b",20),rep("c",20)))
-# order_vec <- sample(1:60 ,60)
-# dis_dat_rn <- dis_dat[order_vec, ]
-
-# png("SSY.png", bg = "transparent")
-#   par(cex = 1.5)
-#   plot(dis_dat_rn[ , 1], ylab = "y", xlab = "order", las = 1)
-#   abline(mean(dis_dat_rn[ , 1]), 0, lwd = 2)
-#   for(i in 1:nrow(dis_dat_rn)) {
-#     lines(c(i, i), c(mean(dis_dat_rn[ , 1]), dis_dat_rn[i, 1]), lwd = 1.5)
-#   }
-#   mtext(expression(SSY == sum((y-bar(y)))^2), side = 3, line = 1.5, cex = 2)
-# dev.off()
-
-# png("SSE.png", bg="transparent")
-  # par(cex = 1.5)
-  # plot(dis_dat_rn[ , 1], type = "n", ylab = "y", xlab = "order", las = 1)
-
-  # points(seq(1, 60, 3), dis_dat_rn[dis_dat_rn[ , 2] == "a", 1], pch = 16)
-  # points(seq(2, 60, 3), dis_dat_rn[dis_dat_rn[ , 2] == "b", 1], pch = 18 )
-  # points(seq(3, 60, 3), dis_dat_rn[dis_dat_rn[ , 2] == "c", 1], pch = 21)
-
-  # abline(mean(dis_dat_rn[dis_dat_rn[ , 2] == "a", 1]), 0, lwd = 2)
-  # abline(mean(dis_dat_rn[dis_dat_rn[ , 2] == "b", 1]), 0, lwd = 2, lty = 2)
-  # abline(mean(dis_dat_rn[dis_dat_rn[ , 2] == "c", 1]), 0, lwd = 2, lty = 4)
-  
-  # k <- -2
-  # for (i in 1:20){
-    # k <- k+3
-    # lines(c(k, k), c(mean(dis_dat_rn[dis_dat_rn[ , 2] == "a", 1]), dis_dat_rn[dis_dat_rn[ , 2] == "a", 1][i]), lwd = 2)
-    # lines(c(k+1, k+1), c(mean(dis_dat_rn[dis_dat_rn[ , 2]== "b", 1]), dis_dat_rn[dis_dat_rn[ , 2] == "b", 1][i]), lwd = 2)
-    # lines(c(k+2, k+2), c(mean(dis_dat_rn[dis_dat_rn[ , 2]== "c", 1]), dis_dat_rn[dis_dat_rn[ , 2] == "c", 1][i]), lwd = 2)
-  # }
-  # mtext(expression(SSE == sum(sum((y-bar(y[j])))^2)), side = 3, line = 1.5, cex = 2)
-# dev.off()
-# end of plot
-
-
-####################################################################################
-# Exercise 2: Divide the possums into 4 age groups of approximately similar sample size 
-# and examine whether the head lengths differ
-####################################################################################
-
-# see linear regression model below for diagnostics
-
-## Solution
-# Use the cut function to create 4 groups of similar sample size and 
-# add this as column to our data.frame
-pos_dat$age_groups <- cut(pos_dat$age, c(0, 2.25, 3, 5, 10))
-head(pos_dat)
-
-# put on same median to ease the checking of homogeneity of variance
-med <- tapply(pos_dat$hdlngth, pos_dat$age_groups, median)
-# compute median of groups
-w <- pos_dat$hdlngth - med[pos_dat$age_groups]
-# compute distance to median and plot
-plot(w ~ age_groups, data = pos_dat)
-
-# variation seems to decrease with age
-
-# however, we can fit the anova and run model diagnostics afterwards to decide
-# whether the assumptions of normality and homogeneity of variance are met
-
-## conduct anova
-summary(aov(hdlngth ~ age_groups, data = pos_dat))
-# displays the anova table for the response variable (value) as explained by the factor (Group)
-# p is slightly smaller than 0.05, and would be considered statistically significant
-
-# this only tests the null hypothesis - in most cases the effects size for each factor is more interesting
-summary.lm(model_1 <- aov(hdlngth ~ age_groups, data = pos_dat))
-# note that the hypothesis tests displayed for summary.lm are treatment contrasts
-# this means that the difference of each level to the first level is tested.
-# you could set other contrasts, see the section on contrasts in Crawleys R Book
-
-# how to interpret the parameters in the table?
-mean_a <- mean(pos_dat$hdlngth[pos_dat$age_groups == "(0,2.25]"], na.rm = TRUE)
-# this is the intercept
-mean_a
-mean_b <- mean(pos_dat$hdlngth[pos_dat$age_groups == "(2.25,3]"], na.rm = TRUE)
-mean_b
-mean_b - mean_a 
-# this gives the second line in the summary table: the difference between mean for a and mean for b
-
-# We could also remove the intercept from our model (by adding -1), then we have the estimates (means) for every group
-summary.lm(model_1 <- aov(hdlngth ~ age_groups - 1, data = pos_dat))
-# however, this makes not much sense, as then the model compares the estimate to 0
-# note that this inflates the explained variance 
-
-# now we turn to model diagnostics
-par(mfrow = c(1, 2), cex = 1.5)
-plot(model_1, which = 1:2)
-# plot 1 allows checking for homoscedasticity (equal variances of residuals)
-# plot 2 allows checking for normal distribution of the residuals.
-# the homogeneity of variances can also be examined using hypothesis testing such 
-# as Levenes Test (leveneTest {car}) or Bartlett`s test (bartlett.test), 
-# but we will not do this for reasons discussed elsewhere (see slides and notes)
-# we take a look at the reference plots to evaluate whether the residuals are normally distributed
-
-library(DAAG)
-quartz() # please note: on Windows OS use windows(), on Linux x11()
-qreference(residuals(model_1), nrep = 4)
-# nrep controls the number of reference plots
-# there may be a slight departure from normality due to a few observations 
-
-# given that variances do not look equal, we consider Welch's anova
-oneway.test(hdlngth ~ age_groups, data = pos_dat, var.equal = FALSE)
-# leads to a slightly higher p value (0.054 instead of 0.041)
-# this example shows that it is questionable to 
-# employ a binary decision such as significant or non-significant
-# we clearly have a borderline case here
-# In a paper, you would rather report 0.054 to be on the safe side
-# and look at effect sizes
-
-###################################
-#Demonstration linear regression  #
-###################################
-
-library(vegan)
-data("varechem")
-# we use some soil data to demonstrate how to conduct a linear regression analysis
-?varechem
-head(varechem)
-str(varechem)
-
-# we check the relationship between K and S
-# linear regression for data
-mod_1 <-lm(S ~ K, data = varechem) 
-# regression for air pollution by factories (as expressed with the ~)
-summary.lm(mod_1)
-# this function gives an overview on residuals and coefficients. 
-
-# plot relationship
-plot(S ~ K, data = varechem)
-# and regression line
-par(las = 1,cex = 1.8)
-plot(S ~ K, data = varechem, ylab="S concentration", xlab="K concentration")
-# we extract the lines from the regression model with the function abline()
-abline(mod_1, lwd = 2)
-
-##for publication style output use
-library(memisc)
-mtable(mod_1)
-# there are various arguments that can be adjusted for this function
-
-### model checking
-# can also be used for anova
-par(mfrow = c(1, 3))
-plot(mod_1, which = 1:3)
-# the plots 1 and 3 can be used to spot departure from the assumption of homoscedasticity
-# plot 2 is the quantile-quantile plot and serves as a diagnosis tool to check for normality of residuals, 
-# plot 3 is similar to plot 1 but uses standardized residuals. 
-# Standardized residuals are obtained by dividing each residual by its standard deviation. 
-# They show (1) how many standard deviations any point is away from the fitted regression model and 
-# (2) have constant variance even if residuals have nonconstant variance (due to leverage). 
-# In the absence of leverage points plot 1 and 3 are very similar. 
-# Standardized residuals can also be used to check for outliers. 
-# Points that are more than 2 standard deviations away from the regression line may 
-# be considered as outlier (see Sheater 2009: p.60).
-
-# for more exploration of residuals, see:
-https://www.r-bloggers.com/visualising-residuals/
-
-# if you feel insecure regarding the evaluation of deviation from normality, 
-# the qreference function is helpful and allows comparison with data drawn from a normal distribution
-qreference(residuals(mod_1), nrep = 8)
-# nothing to worry
-
-# Plots on influence of specific points
-par(mfrow = c(1,3))
-plot(mod_1, which = 4:6)
-# these 3 plots display deliver information on influential observations.
-# the second plot is usually the first to consider
-# if any observation is inside the boundaries of Cooks distance
-# we don't need to worry about influential points 
-
-# calculation of two times the average hat value
-# 2* p/n - see lecture
-2*2/nrow(varechem) 
-# gives double the average hat value and 
-# plot 2 and 3 allow checking for influential points with a hat value larger than this average hat value. 
-
-dfbeta(mod_1) 
-# gives the the change in the model parameter when the respective point is omitted
-# leave-one-out regression
-# example
-mod_2 <-lm(S ~ K, data = varechem[-1, ]) 
-summary(mod_1)
-summary(mod_2)
-dfbeta(mod_1)[ 1,]
-
-###########################
-#   some helper functions #
-###########################
-### Extracting results from model
-coefficients(mod_1)
-# gives the coefficients of the model
-
-fitted(mod_1)
-# fitted values (predictions for the x)
-
-confint(mod_1)
-# confidence intervals for the parameters
-
-residuals(mod_1)
-# model residuals
-
-rstandard(mod_1)
-# standardized residuals
-
-anova(mod_1)
-# gives the analysis of variance table with the explained variance for the variables 
-# and the unexplained variance as residuals
-
-str(mod_1) 
-# structure of fitted model object, shows what can be extracted from model
-
-# plots for slides
-# though this section is only relevant for creating the slides, you may want to check 
-# the commands in case you are interested in graphical plotting
-# 
+##############################################################################
 # We load some new data that gives the biological growth of a species in dependence of tannin. 
 # This data was provided by Crawley (2015), see pages 116 following.
 # tan_dat <- read.table("http://www.uni-koblenz-landau.de/en/campus-landau/faculty7/environmental-sciences/landscape-ecology/Teaching/tannin.txt", header=TRUE)
@@ -812,61 +600,3 @@ str(mod_1)
 #   plot(tannin3, growth3, main = "Hat value for x=20 is 0.81", xlab = "x", ylab = "y")
 #   abline(th_mod3, lwd = 2)
 # dev.off()
-
-################################################################################################
-# Exercise 3: Develop regression models for total length of possums predicted 
-# by foot length and skull width as predicted by head length. 
-# Would you recommend to predict the total length of the possum from traces of their feet in the snow? 
-# And is an invasive measurement of the skull width necessary or can it be approximated with the head length?
-################################################################################################
-
-## Look at the data
-# relationship between foot length and possums.
-plot(totlngth~footlgth, data = pos_dat, 
-     ylab = "Total length", xlab = "Foot length")
-# slightly positive relationship between both variables
-
-## model fitting
-foot_mod <- lm(totlngth ~ footlgth, data = pos_dat)
-summary.lm(foot_mod)
-# only 20% of variation explained - model is not very good for predicting the total length of the possum
-
-### model checking
-par(mfrow = c(2, 2))
-plot(foot_mod)
-# the plots 1 and 3 can be used to spot departure from the assumption of homoscedasticity. 
-# Both figures do indicate that heteroscedasticity is not a problem here
-# In addition, plot 3 can be used to spot outliers. 
-# In fact, observations 39 and 44 may be considered as outliers as they deviate > 2 sd from the fitted model. 
-# Altough plot 4 confirms that both observations (39 and 44) are outliers, 
-# it also suggests that they are not influential in terms of Cooks distance. 
-# Plot 2 is the quantile-quantile plot and serves as a diagnosis tool to check for normality of residuals. 
-# We use reference plots from a normal distribution to ease interpretation:
-quartz()
-# please note: on Windows OS use windows(), on Linux x11()
-qreference(residuals(foot_mod), nrep = 8)
-# no indication of non-normal distribution
-
-##################################################################################################
-# although not really necessary for this case, for purpose of demonstration we fit the 
-# model again without both outliers to see whether the parameter estimates and model fit changes
-foot_mod2 <-lm(totlngth ~ footlgth, data = pos_dat[-c(39, 44), ])
-summary.lm(foot_mod2)
-# indeed a slight increase in model fit!
-par(mfrow = c(2, 2))
-plot(foot_mod2)
-# nothing to worry in model diagnostics
-# let`s plot the model and see to which extent the outliers influence the model parameters
-quartz()
-par(las = 1,cex = 1.8)
-plot(totlngth ~ footlgth, data = pos_dat, ylab="Total length", xlab="Foot length")
-# we extract the lines from the regression model with the function abline()
-abline(foot_mod, lwd = 2)
-abline(foot_mod2, lwd = 2, lty = 2, col = "red")
-# only slight change without outliers
-# finally we mark the outliers
-points(pos_dat$footlgth[c(39, 44)], pos_dat$totlngth[c(39,44)], 
-       pch = 16, col = "blue")
-# for a scientific publication you would also report the model results with and 
-# without the outliers and mark the outliers in a similar manner (but not necessarily in blue :-)
-

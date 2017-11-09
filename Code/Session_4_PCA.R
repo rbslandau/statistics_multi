@@ -378,7 +378,7 @@ text(spec1,spec2, labels=1:19)
 
 
 ##################
-#   Exercise 6   #
+#   Exercise     #
 ##################
 # Conduct a complete PCA for the glass data set.
 # How many principal components are needed to visualise the data? 
