@@ -118,7 +118,7 @@ cramer.test(as.matrix(skull_dat[tibet_data$Type == 1, ]), as.matrix(skull_dat[ti
 # move file into your working directory
 # open in a spreadsheet program and save as .csv format
 
-soil_dat <- read.csv("~/Gitprojects/Teaching/Statistics_multi/Data/Table_1.csv", sep = ";", dec = ".")
+soil_dat <- read.csv("https://raw.githubusercontent.com/rbslandau/statistics_multi/master/Data/Table_1.csv", sep = ";", dec = ".")
 head(soil_dat)
 # many columns empty
 summary(soil_dat)
