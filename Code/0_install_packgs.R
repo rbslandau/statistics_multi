@@ -1,3 +1,3 @@
-pkgs <- readLines(file("https://www.uni-koblenz-landau.de/en/campus-landau/faculty7/environmental-sciences/landscape-ecology/Teaching/inst_pkgs/at_download/file", "r"))
+pkgs <- readLines(file("https://raw.githubusercontent.com/rbslandau/statistics_multi/master/Data/installed_pkgs.txt", "r"))
 str(pkgs)
 install.packages(pkgs)
