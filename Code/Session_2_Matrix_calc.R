@@ -1,6 +1,6 @@
 #################################################################################
 # Script for the course: Applied multivariate Statistics with R					#
-#					by Ralf B. Schäfer											#
+# 					by Ralf B. Schäfer											#
 # 					WS 2017/18													#
 # The script provides matrix calculations for slides "mathematical basis"		#
 #################################################################################
@@ -13,7 +13,7 @@ mat2
 
 # check number of columns and rows
 ncol(mat2)
-nrow(mat2) 
+nrow(mat2)
 
 # Addition of matrices
 mat3 <- mat1 + mat2
@@ -39,8 +39,8 @@ mat8
 # computation of the inverse matrix
 nrow(mat7) - qr(mat7)$rank
 # inverse does exist because n = rank of matrix
-# computation of inverse 
-mat7_inv <- solve(mat7) 
+# computation of inverse
+mat7_inv <- solve(mat7)
 
 mat7_inv %*% mat7
 mat7 %*% mat7_inv
@@ -49,12 +49,12 @@ mat7 %*% mat7_inv
 # identity matrix, matrix multiplication returns initial matrix
 mat7
 diag(x = 1, 2, 2)
-mat7 %*% diag(x = 1,2,2) 
+mat7 %*% diag(x = 1, 2, 2)
 
 
 # inverse does not exist because n > rank of matrix
 nrow(mat8) - qr(mat8)$rank
-#check:
+# check:
 solve(mat8)
 # inverse does not exist!!!
 
@@ -82,8 +82,5 @@ betas <- solve(t(full) %*% full) %*% (t(full) %*% resp_var)
 betas
 
 # compare with multiple regression
-coefficients(lm(resp_var ~ ., data=data.frame(full)))
+coefficients(lm(resp_var ~ ., data = data.frame(full)))
 # gives same results
-
-
-

@@ -1,6 +1,6 @@
 #################################################################################
 # Script for Session 3 of the course: Applied multivariate Statistics with R	#
-#						by Ralf B. Schäfer											#
+# 						by Ralf B. Schäfer											#
 # 						WS 2017/18														#
 # 		The script describes Generalised linear models in R						#
 #################################################################################
@@ -11,8 +11,8 @@ setwd("~/Gitprojects/Teaching/Statistics_multi/Code")
 #
 # to simplify the identification of your path, you can use the following function
 file.choose()
-# and select a file in your desired working directory. 
-# Subsequently, copy the path the the folder without (!!!) the file 
+# and select a file in your desired working directory.
+# Subsequently, copy the path the the folder without (!!!) the file
 # reference into the setwd() function
 
 ## Demonstration - code modified from Maindonald 2010, chapter 8
@@ -28,40 +28,40 @@ library(DAAG)
 ### analysis with lm shows violation of assumption
 flaw_mod <- lm(frogs$pres.abs ~ frogs$distance)
 summary(flaw_mod)
-par(cex=1.5, mfrow=c(2,2))
+par(cex = 1.5, mfrow = c(2, 2))
 plot(flaw_mod)
 
 #############################################################
 # Checking distribution of variables and transformation     #
 #############################################################
 
-# We have a look at the data, since the data is from a restricted area, 
+# We have a look at the data, since the data is from a restricted area,
 # geographical parameters are omitted from analysis
 
 library(car)
-spm(frogs[ , c(4:10)])
+spm(frogs[, c(4:10)])
 # Distance, NoOfSites and NoOfpools look left skewed.
 
 # we also check the data range
 summary(frogs$distance)
 summary(frogs$NoOfPools)
 summary(frogs$NoOfSites)
-# NoOfSites has a relatively narrow data range 
+# NoOfSites has a relatively narrow data range
 # does not require transformation
 # The two other variables span 2 orders of magnitude
 # Transformation should be considered
 
 # we check whether sqrt or log transformation improves the distribution
-par(mfrow = c(2,3)) 
-for(nam in c("distance", "NoOfPools")){ 
-    y <- frogs[ , nam] 
-    plot(density(y), main = "", xlab = nam) 
-    plot(density(sqrt(y)), main= "", xlab = nam) 
-    plot(density(log(y)), main = "", xlab = nam)
-} 
+par(mfrow = c(2, 3))
+for (nam in c("distance", "NoOfPools")) {
+  y <- frogs[, nam]
+  plot(density(y), main = "", xlab = nam)
+  plot(density(sqrt(y)), main = "", xlab = nam)
+  plot(density(log(y)), main = "", xlab = nam)
+}
 
 # log transformation selected for NoOfPools and distance,
-frogs$logNoPools <- log(frogs$NoOfPools) 
+frogs$logNoPools <- log(frogs$NoOfPools)
 frogs$logdistance <- log(frogs$distance)
 
 ##############################
@@ -70,8 +70,8 @@ frogs$logdistance <- log(frogs$distance)
 
 # we inspect the data for collinearity
 # columns 5 and 6 are the untransformed variables
-# which are not selected 
-spm(frogs[ , c(4, 7:12)])
+# which are not selected
+spm(frogs[, c(4, 7:12)])
 # very high correlations between meanmax, altitude and meanmin
 # this function represent an alternative
 # to the function introduced in the context of
@@ -80,24 +80,28 @@ spm(frogs[ , c(4, 7:12)])
 dev.off()
 
 # check correlation coefficients
-cor(frogs[ , c(4, 7:12)]) 
+cor(frogs[, c(4, 7:12)])
 # almost correlation of 1 for altitude, meanmax and meanmin
 
 # compute the VIF
-frog.glm <- glm(pres.abs ~ logdistance + logNoPools + NoOfSites + avrain
- 			 + altitude + meanmax + meanmin, family = binomial(link="logit"),
- 			  data = frogs, na.action= "na.fail")
-# as for the lm, we first fit the glm. Syntax is similar to that of 
+frog.glm <- glm(
+  pres.abs ~ logdistance + logNoPools + NoOfSites + avrain
+    + altitude + meanmax + meanmin, family = binomial(link = "logit"),
+  data = frogs, na.action = "na.fail"
+)
+# as for the lm, we first fit the glm. Syntax is similar to that of
 # the lm, except for the specification of the binomial distribution
 # and logit link. See ?family for other distributions
 vif(frog.glm)
 # very high VIFs
 
 # we omit altitude from the model, combine meanmin and meanmax and recheck VIF
-frog.glm2 <- glm(pres.abs ~ logdistance + logNoPools + NoOfSites 
-			   + avrain +  I(meanmax + meanmin), family = binomial, 
-			   data = frogs, na.action= "na.fail")
-# combination of meanmax and meanmin via I 
+frog.glm2 <- glm(
+  pres.abs ~ logdistance + logNoPools + NoOfSites
+    + avrain + I(meanmax + meanmin), family = binomial,
+  data = frogs, na.action = "na.fail"
+)
+# combination of meanmax and meanmin via I
 # is equivalent to including the mean of both variables
 # this represents an alternative to omission of one of the variables
 
@@ -107,7 +111,7 @@ vif(frog.glm2)
 #######################################################
 # Computation of all possible models  				  #
 #######################################################
-# As for the linear model, we first compute 
+# As for the linear model, we first compute
 # compute all possible models
 # in fact, application of this technique as well as the
 # following ones is largely identical code-wise as for the lm
@@ -136,7 +140,7 @@ summary(frog.glm2)
 # related to the test of the parameter differing from 0,
 # we should remove NoOfSites
 
-frog.glm3 <- update(frog.glm2, ~ . -NoOfSites)
+frog.glm3 <- update(frog.glm2, ~ . - NoOfSites)
 summary(frog.glm3)
 # now all parameters significant
 
@@ -150,21 +154,23 @@ summary(frog.glm3)
 # lead to similar inferences
 
 # as for the lm, we can use the anova test and specify
-# the chisquare test for comparing the deviances 
+# the chisquare test for comparing the deviances
 # technically, this is a Likelihood ratio test
 anova(frog.glm3, frog.glm2, test = "Chisq")
 # no significant difference, hence this test supports simplification
 # you should use test = "F" for quasi-likelihood based models
 
 # using anova for a single model
-# gives sequential reduction in deviance, 
+# gives sequential reduction in deviance,
 anova(frog.glm3, test = "Chisq")
 # when terms are added sequentially (Type I ANOVA)
 
 # makes not much sense to draw inference from this, as the following example shows:
-frog.glm4 <- glm(pres.abs ~  I(meanmax + meanmin) + avrain + 
-			  logdistance + logNoPools, family = binomial, 
-			  data = frogs, na.action= "na.fail")
+frog.glm4 <- glm(
+  pres.abs ~  I(meanmax + meanmin) + avrain +
+    logdistance + logNoPools, family = binomial,
+  data = frogs, na.action = "na.fail"
+)
 anova(frog.glm4, test = "Chisq")
 # now all terms are significant, only by changing order in formula!
 
@@ -179,16 +185,16 @@ drop1(frog.glm4, test = "Chisq")
 # Stepwise backward selection using information theoretic approach#
 ###################################################################
 
-# if using information theoretic approaches, 
+# if using information theoretic approaches,
 # the functions are again the same as for the linear model
 # calculation of AIC
 AIC(frog.glm2)
-AIC(frog.glm3) 
+AIC(frog.glm3)
 # AIC lower, also suggesting the removal of NoOfSites
 
 # calculation of BIC
 BIC(frog.glm2)
-BIC(frog.glm3) 
+BIC(frog.glm3)
 # BIC lower, also suggesting the removal of NoOfSites
 
 ##################################################
@@ -196,13 +202,15 @@ BIC(frog.glm3)
 ##################################################
 
 # we have set the full model above, we specify the null model
-null <- glm(pres.abs ~ 1, family = binomial, data = frogs, na.action= "na.fail")
+null <- glm(pres.abs ~ 1, family = binomial, data = frogs, na.action = "na.fail")
 # nullmodel: no variables, only mean
 
 # calculate sample size for BIC
 n <- length(frogs$pres.abs)
-step(frog.glm2, direction = "both", trace = 100, 
-	scope= list(upper = frog.glm2, lower = null), k = log(n))
+step(
+  frog.glm2, direction = "both", trace = 100,
+  scope = list(upper = frog.glm2, lower = null), k = log(n)
+)
 # automatic forward and backward model building with the BIC
 # for this data set all techniques result in the same model
 
@@ -211,12 +219,14 @@ step(frog.glm2, direction = "both", trace = 100,
 #############################
 # regression coefficients
 library(shrink)
-# re-fit the model with x = TRUE and y = TRUE, which returns 
+# re-fit the model with x = TRUE and y = TRUE, which returns
 # information (model matrix and the response)
 # required by the shrink function
-frog.glm3_s <- glm(pres.abs ~ logdistance + logNoPools + 
-			   + avrain +  I(meanmax + meanmin), family = binomial, 
-			   data = frogs, na.action= "na.fail", x = TRUE, y = TRUE)
+frog.glm3_s <- glm(
+  pres.abs ~ logdistance + logNoPools +
+    +avrain + I(meanmax + meanmin), family = binomial,
+  data = frogs, na.action = "na.fail", x = TRUE, y = TRUE
+)
 
 # global shrinkage shrinks all parameters with the same factor
 shrink_res1 <- shrink(frog.glm3_s, type = "global")
@@ -234,12 +244,14 @@ shrink_res2
 library(glmnet)
 # fit model with lasso
 # prepare data set with explanatory variables
-data_env <- frogs[ , names(frogs) %in% c("logdistance", "logNoPools", 
-						"NoOfSites", "avrain") ]
-data_env$meanmaxmin <- frogs$meanmin + 	frogs$meanmax
+data_env <- frogs[, names(frogs) %in% c(
+  "logdistance", "logNoPools",
+  "NoOfSites", "avrain"
+) ]
+data_env$meanmaxmin <- frogs$meanmin + frogs$meanmax
 
-# now we can fit the model					
-lasso_mod <- glmnet(as.matrix(data_env), frogs$pres.abs, family ="binomial")
+# now we can fit the model
+lasso_mod <- glmnet(as.matrix(data_env), frogs$pres.abs, family = "binomial")
 
 # plot result
 par(cex = 1.5)
@@ -249,12 +261,12 @@ plot(lasso_mod, label = TRUE, xvar = "lambda")
 coef(lasso_mod)
 
 # overall, variables 3, 4 and 5 (equivalent to logNoPools, logdistance, meanmaxmin)
-# can be interpreted as most important, 
+# can be interpreted as most important,
 # as their betas are unequal to zero for highest penalty
 
 # we determine the optimal lambda based on cross-validation
 set.seed(222)
-cvfit <- cv.glmnet(as.matrix(data_env), frogs$pres.abs, family ="binomial")
+cvfit <- cv.glmnet(as.matrix(data_env), frogs$pres.abs, family = "binomial")
 plot(cvfit)
 # both the minimum lambda and that within 1se have 4 variables
 
@@ -269,15 +281,15 @@ coef(cvfit, s = "lambda.1se")
 # for the higher lambda (related to 1se)
 
 ###########################################
-#GLM Model diagnostics and interpretation #
+# GLM Model diagnostics and interpretation #
 ###########################################
 
 library(statmod)
 # 1. let us check the dispersion of the model
 summary(frog.glm3)
-# if we divide the Residual Deviance by the 
-# degrees of freedom we yield a dispersion parameter 
-# of approximately 1 which is very good 
+# if we divide the Residual Deviance by the
+# degrees of freedom we yield a dispersion parameter
+# of approximately 1 which is very good
 # (remember that >2 or <0.5 would indicate over- or underdispersion)
 
 frog.glm3$deviance / frog.glm3$df.resid
@@ -285,14 +297,14 @@ frog.glm3$deviance / frog.glm3$df.resid
 
 # let us look at the qq plot
 qr <- qres.binom(frog.glm3)
-# we compute Dunn-Smyth-Residuals that are most appropriate for GLMs 
+# we compute Dunn-Smyth-Residuals that are most appropriate for GLMs
 qqnorm(qr)
 # also relatively good fit to the qqline
 
-# in case of over- or underdispersion you would refit 
-# the model with another distribution e.g. negative binomial 
+# in case of over- or underdispersion you would refit
+# the model with another distribution e.g. negative binomial
 # or quasi likelihood estimation (e.g. for the binomial model use glm(..., family="quasibinomial")
-# see the notes to the slides for how to decide between negative binomial and 
+# see the notes to the slides for how to decide between negative binomial and
 # the quasibinomial model
 
 # another way to check the residuals are so-called rootogramms
@@ -320,17 +332,17 @@ influenceIndexPlot(frog.glm3, vars = c("Cook", "hat"), id.n = 3)
 # 182 predictor outlier, 77 has highest Cook`s distance
 # but nevertheless nothing to worry
 
-plot(frog.glm3, which=5)
+plot(frog.glm3, which = 5)
 # confirms evaluation, shows that points 77,76 and a few others are outliers
 
 influencePlot(frog.glm3, id.n = 3)
-# similar plot - cooks distance is plotted as increasing bobble 
+# similar plot - cooks distance is plotted as increasing bobble
 
-#we could also look at the values numerically:
+# we could also look at the values numerically:
 influence.measures(frog.glm3)
 
 # we can check whether removal of the points with the highest CookD and hat values results in model change:
-compareCoefs(frog.glm3, frog.glm5 <- update(frog.glm3, subset = -c(71,75,76,77,86,145,182)))
+compareCoefs(frog.glm3, frog.glm5 <- update(frog.glm3, subset = -c(71, 75, 76, 77, 86, 145, 182)))
 # model fit changes slightly - new estimates within one standard error
 # but note that you would need to shrink again (post selection shrinkage)
 # or run the lasso with the reduced data
@@ -338,7 +350,7 @@ compareCoefs(frog.glm3, frog.glm5 <- update(frog.glm3, subset = -c(71,75,76,77,8
 # predictive accuracy is higher if keeping these data points
 
 # plot to show response to individual variables
-par(mfrow = c(2,2))
+par(mfrow = c(2, 2))
 termplot(frog.glm3)
 
 # How to interpret the values on the y axis?
@@ -352,23 +364,23 @@ ilogit(4)
 min(frog.glm3$fitted.values)
 max(frog.glm3$fitted.values)
 
-# the termplot also helps us to understand what the regression coefficients 
+# the termplot also helps us to understand what the regression coefficients
 # in the GLM summary mean: they provide the slope for the lines
-# i.e. they indicate how the log odds change for one unit of increase in the 
-# explanatory variable. 
+# i.e. they indicate how the log odds change for one unit of increase in the
+# explanatory variable.
 summary(frog.glm3)
 # For example, an increase of logdistance by 1 unit (e.g. from 7 to 8)
 # results in a change of logodds of -0.85 (compare to the plot)
 
 # Finally, we employ cross validation to determine the prediction error
-CVbinary(frog.glm3, nfolds= 10)
+CVbinary(frog.glm3, nfolds = 10)
 # 10-fold cross validation
 # gives proportion that are correctly predicted (true present, true absent)
 
 ########################################
 #    Further diagnostics and analysis  #
 ########################################
-# Further examples and diagnostics are provided in Logan (2010, chapter 17), 
+# Further examples and diagnostics are provided in Logan (2010, chapter 17),
 # Maindonald (2010, chapter 8) and Fox & Weisberger (2011, chapter 6)
 
 #########################################
@@ -395,7 +407,7 @@ pa_data$biome <- factor(pa_data$biome)
 # # thinning of absence data with annual mean temperature > 20 in order to get a better looking figure
 # nr_bio <- nrow(pa_data[pa_data$bio1 > 20 & pa_data$pa==0,])
 # # 591 rows
-# ind_bio <- which(pa_data$bio1 > 20 & pa_data$pa==0) 
+# ind_bio <- which(pa_data$bio1 > 20 & pa_data$pa==0)
 # # index of absence with annual mean temp > 20
 # thinning <- sample(ind_bio, nr_bio-10)
 # padat2 <- pa_data[-thinning, ]

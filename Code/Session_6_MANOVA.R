@@ -1,6 +1,6 @@
 ###################################################################################
 # Script for Session 6 of the course: Applied multivariate Statistics with R  	  #
-#						by Ralf B. Schäfer,	WS 2017/18							  #
+# 						by Ralf B. Schäfer,	WS 2017/18							  #
 # 						Hotelling T2 test and MANOVA					  		  #
 ###################################################################################
 
@@ -12,28 +12,28 @@ setwd("~/Gitprojects/Teaching/Statistics_multi/Code")
 # and select a file in your desired working directory. Subsequently, copy the path
 # without (!!!) the file reference into the setwd function
 
-tibet_data <- read.table("http://www.uni-koblenz-landau.de/en/campus-landau/faculty7/environmental-sciences/landscape-ecology/Teaching/tibet_skull/at_download/file", sep = ";", dec = ".", header=TRUE)
+tibet_data <- read.table("http://www.uni-koblenz-landau.de/en/campus-landau/faculty7/environmental-sciences/landscape-ecology/Teaching/tibet_skull/at_download/file", sep = ";", dec = ".", header = TRUE)
 head(tibet_data)
 str(tibet_data)
 # taken from Everitt 2005
-# Tibetan skull data: Group one (type I) found in graves in Sikkim and neighboring areas of Tibet; 
+# Tibetan skull data: Group one (type I) found in graves in Sikkim and neighboring areas of Tibet;
 # group two (type II) consisting of the remaining 15 skulls picked up on battlefield in the Lhasa district
 # Hypothesis (in former times): Tibetans from Khans might be survivors of a particular fundamental human type
 # unrelated to the Mongolian and Indian types that surrounded them.
-skull_dat <- tibet_data[ , 1:5]
+skull_dat <- tibet_data[, 1:5]
 
 ##################################################
 # check model assumptions for Hotelling T2 test  #
 ##################################################
 
-# check assumption of multivariate normality 
+# check assumption of multivariate normality
 library(mvoutlier)
-chisq.plot(skull_dat[tibet_data$Type == 1, ], quan = 1, ask= FALSE)
+chisq.plot(skull_dat[tibet_data$Type == 1, ], quan = 1, ask = FALSE)
 # looks ok, given the small sample size
-chisq.plot(skull_dat[tibet_data$Type == 2, ], quan = 1, ask= FALSE)
+chisq.plot(skull_dat[tibet_data$Type == 2, ], quan = 1, ask = FALSE)
 # looks ok, given the small sample size
 
-# check assumption of homogeneity of within group covariance matrices 
+# check assumption of homogeneity of within group covariance matrices
 # using a hypohtesis test
 library(vegan)
 skull_dist <- dist(skull_dat)
@@ -44,15 +44,15 @@ set.seed(111)
 permutest(skull_mhv)
 # no indication of differences using permutational test
 
-############################ 
+############################
 #    Visual checking 	   #
 ############################
 
 # visual method to check for homoscedasticity of covariances
 library(pcaPP)
-par(cex=1.5)
+par(cex = 1.5)
 plotcov(cov(skull_dat[tibet_data$Type == 1, ]), cov(skull_dat[tibet_data$Type == 2, ]), method1 = "Group 1", method2 = "Group 2")
-# shows the covariances of both samples in a plot. 
+# shows the covariances of both samples in a plot.
 # except for one or two covariances, all look very similar
 
 # check homoscedasticity of variances
@@ -78,7 +78,7 @@ plot(w ~ Type, data = tibet_data)
 
 ##########################
 #  End	Visual checking  #
-#						 #
+# 						 #
 ##########################
 
 #########################
@@ -92,7 +92,7 @@ HotellingsT2(as.matrix(skull_dat) ~ tibet_data$Type)
 # but function requires matrix as input data
 
 manov_skull <- manova(as.matrix(skull_dat) ~ tibet_data$Type)
-summary.manova(manov_skull, test = "Hotelling-Lawley") 
+summary.manova(manov_skull, test = "Hotelling-Lawley")
 # you obtain the same result for a manova, when selecting the Hotelling-Lawley test statistics
 
 ### in the case of strong deviations from the multivariate normal distribution
@@ -100,7 +100,7 @@ summary.manova(manov_skull, test = "Hotelling-Lawley")
 library(cramer)
 cramer.test(as.matrix(skull_dat[tibet_data$Type == 1, ]), as.matrix(skull_dat[tibet_data$Type == 2, ]))
 # a new test for multivariate two sample problem, introduced by
-# Baringhaus, L. and Franz, C. (2004) On a new multivariate two-sample test, 
+# Baringhaus, L. and Franz, C. (2004) On a new multivariate two-sample test,
 # Journal of Multivariate Analysis, 88, p. 190-206
 
 ##################
@@ -108,8 +108,8 @@ cramer.test(as.matrix(skull_dat[tibet_data$Type == 1, ]), as.matrix(skull_dat[ti
 ##################
 
 # conduct manova on soil data from the following study:
-# Holmgren et al. (2015) Positive shrub-tree interactions 
-# facilitate woody encroachment in boreal peatlands. 
+# Holmgren et al. (2015) Positive shrub-tree interactions
+# facilitate woody encroachment in boreal peatlands.
 # Journal of Ecology, 103(1): 58-66
 # You can download the data here:
 # http://datadryad.org/resource/doi:10.5061/dryad.jf2n3/2
@@ -127,37 +127,37 @@ levels(soil_dat$Hummock)
 soil_dat2 <- soil_dat[soil_dat$Hummock %in% c("A", "B", "C", "D"), ]
 # check data
 soil_dat2
-# we remove non-needed columns and rows and rename columns 
-soil_dat3 <- soil_dat2[ , -c(2:5, 9: ncol(soil_dat2))]
-soil_dat3 
+# we remove non-needed columns and rows and rename columns
+soil_dat3 <- soil_dat2[, -c(2:5, 9:ncol(soil_dat2))]
+soil_dat3
 names(soil_dat3) <- c("Cat_", "N", "P", "K")
 # remove NAs in variables
-soil_dat4 <- soil_dat3[! is.na(soil_dat3$N), ]
+soil_dat4 <- soil_dat3[!is.na(soil_dat3$N), ]
 
 # extract quantitative variables and scale
 # otherwise results dominated by variable with highest variance
-soil_fin <- scale(soil_dat4[ ,2:4])
+soil_fin <- scale(soil_dat4[, 2:4])
 
-# check assumption of multivariate normality 
-chisq.plot(soil_fin[soil_dat4$Cat_ == "A", ], quan = 1, ask= FALSE)
+# check assumption of multivariate normality
+chisq.plot(soil_fin[soil_dat4$Cat_ == "A", ], quan = 1, ask = FALSE)
 # Looks acceptable
-chisq.plot(soil_fin[soil_dat4$Cat_ == "B", ], quan = 1, ask= FALSE)
+chisq.plot(soil_fin[soil_dat4$Cat_ == "B", ], quan = 1, ask = FALSE)
 # Looks acceptable
-chisq.plot(soil_fin[soil_dat4$Cat_ == "C", ], quan = 1, ask= FALSE)
+chisq.plot(soil_fin[soil_dat4$Cat_ == "C", ], quan = 1, ask = FALSE)
 # Looks acceptable
-chisq.plot(soil_fin[soil_dat4$Cat_ == "D", ], quan = 1, ask= TRUE)
+chisq.plot(soil_fin[soil_dat4$Cat_ == "D", ], quan = 1, ask = TRUE)
 # observation 1 and 13 are outlier
 # looks acceptable after removal of outlier
 
 soil_fin[soil_dat4$Cat_ == "D", ]
 # observation with rowname 31 and 113 is outlier
-soil_fin <- soil_fin[! row.names(soil_fin) %in% c(31,113), ]
-soil_dat4 <- soil_dat4[! row.names(soil_dat4) %in% c(31,113),  ]
+soil_fin <- soil_fin[!row.names(soil_fin) %in% c(31, 113), ]
+soil_dat4 <- soil_dat4[!row.names(soil_dat4) %in% c(31, 113), ]
 # check again
-chisq.plot(soil_fin[soil_dat4$Cat_ == "D", ], quan = 1, ask= FALSE)
+chisq.plot(soil_fin[soil_dat4$Cat_ == "D", ], quan = 1, ask = FALSE)
 # looks better now
 
-# check assumption of homogeneity of within group covariance matrices 
+# check assumption of homogeneity of within group covariance matrices
 soil_dist <- dist(soil_fin)
 # computes euclidean distance matrix
 (soil_mhv <- betadisper(soil_dist, soil_dat4$Cat_))
@@ -169,7 +169,7 @@ permutest(soil_mhv)
 # we have to consider this in interpretation
 
 # look at collinearity
-par(cex=1.3)
+par(cex = 1.3)
 plotcov(cov(soil_fin[soil_dat4$Cat_ == "B", ]), cov(soil_fin[soil_dat4$Cat_ == "C", ]), method1 = "Group B", method2 = "Group C")
 # similar covariances, N and P higher correlation for group B
 plotcov(cov(soil_fin[soil_dat4$Cat_ == "A", ]), cov(soil_fin[soil_dat4$Cat_ == "D", ]), method1 = "Group A", method2 = "Group D")
@@ -179,15 +179,15 @@ plotcov(cov(soil_fin[soil_dat4$Cat_ == "A", ]), cov(soil_fin[soil_dat4$Cat_ == "
 # manova command
 manov <- manova(as.matrix(soil_fin) ~ soil_dat4$Cat_)
 # requires matrix as input data
-summary.manova(manov) 
-# gives the manova results, the test can be selected using 
+summary.manova(manov)
+# gives the manova results, the test can be selected using
 # test = c("Pillai", "Wilks", "Hotelling-Lawley", "Roy") argument
 # Pillai is the default
 summary.manova(manov, test = c("Wilks"))
 summary.manova(manov, test = c("Roy"))
 # Pillai and Wilks not significant
 # Roy with p = 0.03 significance
-# but Roy is strongest influenced by deviations from 
+# but Roy is strongest influenced by deviations from
 # homogeneity of covariance matrices
 
 # Note that we have a highly balanced design here
@@ -199,8 +199,8 @@ summary(soil_dat4$Cat_)
 # by dividing Pillais trace by the number of eigenvalues (i.e. variables)
 man_eigen <- summary.manova(manov)$Eigenvalues
 l_eigen <- length(man_eigen)
-pill_man <- summary.manova(manov)$stats[1,2]
-pill_man/l_eigen
+pill_man <- summary.manova(manov)$stats[1, 2]
+pill_man / l_eigen
 # average R2 per variable is 0.054
 
 summary.aov(manov)
@@ -213,9 +213,9 @@ library(ICSNP)
 rank.ctest(as.matrix(soil_fin) ~ soil_dat4$Cat_)
 # yields to same results
 
-## robust MANOVA 
-# see http://www.statistik.tuwien.ac.at/public/filz/papers/09CSDAmanova.pdf 
-# for a paper on robust MANOVA by Peter Filzmoser. 
+## robust MANOVA
+# see http://www.statistik.tuwien.ac.at/public/filz/papers/09CSDAmanova.pdf
+# for a paper on robust MANOVA by Peter Filzmoser.
 # In general, Peter Filzmoser provides many papers on robust statistical methods using R
 # http://file.statistik.tuwien.ac.at/filz/papers/09CSDAmanova.pdf
 # the classical, robust and rank-based MANOVA with the Wilk test statistic
@@ -228,22 +228,22 @@ rank.ctest(as.matrix(soil_fin) ~ soil_dat4$Cat_)
 manov_rda <- rda(soil_fin ~ soil_dat4$Cat_)
 summary(manov_rda)
 # explained variance of factor is 6.2 %
-anova(manov_rda, step =1000, perm.max=1000)
+anova(manov_rda, step = 1000, perm.max = 1000)
 # result similar to Manova - but a permutation test is used
 summary.manova(manov) # only for comparison
 
 # the RDA context offers the opportunity of plotting
-par(cex=1.5)
+par(cex = 1.5)
 # plot variables
-plot(manov_rda, scaling=3, display=c("sp"), xlim=c(-1.5,2), ylim=c(-1.5,2.2))
+plot(manov_rda, scaling = 3, display = c("sp"), xlim = c(-1.5, 2), ylim = c(-1.5, 2.2))
 # plot centroids of factors
-text(manov_rda, display="cn", scaling=3, labels= c("A", "B", "C", "D"), col = c("green", "red", "light blue", "orange"))
+text(manov_rda, display = "cn", scaling = 3, labels = c("A", "B", "C", "D"), col = c("green", "red", "light blue", "orange"))
 # add individual sites
-wa_sc <- scores(manov_rda, display="wa", scaling=3)
-text(wa_sc[soil_dat4$Cat_=="A" , ], col="green", labels = row.names(wa_sc[soil_dat4$Cat_=="A", ]))
-text(wa_sc[soil_dat4$Cat_=="B" , ], col="red", labels = row.names(wa_sc[soil_dat4$Cat_=="B", ]))
-text(wa_sc[soil_dat4$Cat_=="C" , ], col="light blue", labels = row.names(wa_sc[soil_dat4$Cat_=="C", ]))
-text(wa_sc[soil_dat4$Cat_=="D" , ], col="orange", labels = row.names(wa_sc[soil_dat4$Cat_=="D", ]))
+wa_sc <- scores(manov_rda, display = "wa", scaling = 3)
+text(wa_sc[soil_dat4$Cat_ == "A", ], col = "green", labels = row.names(wa_sc[soil_dat4$Cat_ == "A", ]))
+text(wa_sc[soil_dat4$Cat_ == "B", ], col = "red", labels = row.names(wa_sc[soil_dat4$Cat_ == "B", ]))
+text(wa_sc[soil_dat4$Cat_ == "C", ], col = "light blue", labels = row.names(wa_sc[soil_dat4$Cat_ == "C", ]))
+text(wa_sc[soil_dat4$Cat_ == "D", ], col = "orange", labels = row.names(wa_sc[soil_dat4$Cat_ == "D", ]))
 # shows that centroids of all factors are close to overall centre
 # spread of A and B higher
 
