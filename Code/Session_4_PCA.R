@@ -100,7 +100,7 @@ screeplot(va_pca, type = "lines", bstick = TRUE)
 # broken stick for individual PCs and cumulative variance provided in the following library:
 library(BiodiversityR)
 PCAsignificance(va_pca)
-# PCA axes with a higher percentage of (accumulated) variance than the broken-stick variance are regarded as significant.
+# PCA axes with a higher percentage of (accumulated) variance than the broken-stick variance are regarded as svignificant.
 # Only the first two axes fulfill broken stick criterion and eight axes the accumulated variance criterion
 
 ###########################
@@ -182,7 +182,7 @@ which(res$ODist > 4)
 ################
 
 # we can display the sites and variables simultaneously
-par(mfrow = c(1, 3), cex = 1.2)
+par(mfrow = c(1, 1), cex = 1.2)
 biplot(va_pca, scaling = 3, display = c("sp", "site"))
 # the scores of the vectors on the axes indicate
 # the relationship with the component axis
