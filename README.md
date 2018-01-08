@@ -21,7 +21,7 @@ install.packages("package_name")
 
 ## Acknowledgments
 
-* ** Eduard Scoezs ** [EDiLD](https://github.com/EDiLD) contributed to some of the code and lecture materials
+* [Eduard Scoezs](https://github.com/EDiLD) contributed to some of the code and lecture materials
 * Several course assistants are thanked for their assistance (e.g. [Andreas Scharmüller](https://github.com/andreasLD),
 [Le Trong Dieu Hien](https://www.uni-koblenz-landau.de/en/campus-landau/faculty7/environmental-sciences/landscape-ecology/Staff/dieuhien/letrongdieuhien) and [Moritz Link](https://www.uni-koblenz-landau.de/en/campus-landau/faculty7/environmental-sciences/landscape-ecology/Staff/moritz-link/moritz-link)).
 
