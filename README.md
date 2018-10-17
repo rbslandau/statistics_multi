@@ -1,11 +1,11 @@
-# Course material for the lecture "Applied Multivariate statistics"
+# Course material for the online course "Applied Multivariate statistics"
 
-by Ralf B. Schäfer, University of Koblenz-Landau 2017/18
+by Ralf B. Schäfer, University of Koblenz-Landau 2018/19
 
 ## Overview
 
 This repository provides all course materials including R code, slides and data.
-For further information such as links to teaching videos [go to our group webpage](https://www.uni-koblenz-landau.de/en/campus-landau/faculty7/environmental-sciences/landscape-ecology/Teaching/r-statistics)
+For further information such as links to teaching videos visit the OpenOlat course pages.
 
 ### Prerequisites
 
@@ -24,5 +24,3 @@ install.packages("package_name")
 * [Eduard Scoezs](https://github.com/EDiLD) contributed to some of the code and lecture materials
 * Several course assistants are thanked for their assistance (e.g. [Andreas Scharmüller](https://github.com/andreasLD),
 [Le Trong Dieu Hien](https://www.uni-koblenz-landau.de/en/campus-landau/faculty7/environmental-sciences/landscape-ecology/Staff/dieuhien/letrongdieuhien) and [Moritz Link](https://www.uni-koblenz-landau.de/en/campus-landau/faculty7/environmental-sciences/landscape-ecology/Staff/moritz-link/moritz-link)).
-* [Achim Zeileis](https://eeecon.uibk.ac.at/~zeileis/) is thanked for development and support with the
-[R exams](http://www.r-exams.org) package that is used for automated test generation in this course
