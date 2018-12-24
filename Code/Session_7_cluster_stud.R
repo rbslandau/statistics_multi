@@ -1,6 +1,6 @@
 ###################################################################################
 # Script for Session 7 of the course: Applied multivariate Statistics with R  	  #
-#						by Ralf B. Schäfer,	WS 2017/18							  #
+#						by Ralf B. Schäfer,	WS 2018/19							  #
 # 						     Cluster analysis									  #
 ###################################################################################
 
@@ -8,7 +8,7 @@
 setwd("~/Gitprojects/Teaching/Statistics_multi/Code")
 # you have to set a path to a working directory on your local machine here
 # to simplify the identification of your path, you can use the following function
-# file.choose()
+file.choose()
 # and select a file in your desired working directory. Subsequently, copy the path
 # without (!!!) the file reference into the setwd function
 

@@ -1,6 +1,6 @@
 ###################################################################################
 # Script for Session 5 of the course: Applied multivariate Statistics with R  	  #
-# 						by Ralf B. Schäfer,	WS 2017/18							  #
+# 						by Ralf B. Schäfer,	WS 2018/19							  #
 # 			Similarity measures and Non-metric multidimensional scaling			  #
 ###################################################################################
 

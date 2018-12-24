@@ -1,21 +1,21 @@
 ###################################################################################
 # Script for Session 7 of the course: Applied multivariate Statistics with R  	  #
-# 						by Ralf B. Schäfer,	WS 2016/17							  #
+# 						by Ralf B. Schäfer,	WS 2018/19							  #
 # 						     Cluster analysis									  #
 ###################################################################################
 
-# let us first set a working directory i.e. a directory where we store all files
-setwd("~/Arbeit/Lehre_Betreuung/2016/WS/Multivariate/Scripts")
+# we first set a working directory i.e. a directory where we store all files
+setwd("~/Gitprojects/Teaching/Statistics_multi/Code")
 # you have to set a path to a working directory on your local machine here
 # to simplify the identification of your path, you can use the following function
-# file.choose()
+file.choose()
 # and select a file in your desired working directory. Subsequently, copy the path
 # without (!!!) the file reference into the setwd function
 
 library(vegan)
-werra_sp <- read.table(file.path("https://www.uni-koblenz-landau.de/en/campus-landau/faculty7/environmental-sciences/landscape-ecology/Teaching/Session7data1/at_download/file"), sep = ";", header = TRUE)
-werra_env <- read.table(file.path("https://www.uni-koblenz-landau.de/en/campus-landau/faculty7/environmental-sciences/landscape-ecology/Teaching/Riverdata2/at_download/file"), sep = ";", header = TRUE)
-# we load some species data from governmental stream monitoring and
+werra_sp <- read.table("https://raw.githubusercontent.com/rbslandau/statistics_multi/master/Data/River_sp.csv", sep = ';', header = TRUE)
+werra_env <- read.table("https://raw.githubusercontent.com/rbslandau/statistics_multi/master/Data/River_env.csv", sep = ';', header=TRUE)
+# we load some species data from governmental stream monitoring and 
 # related grouping information
 
 ###########################

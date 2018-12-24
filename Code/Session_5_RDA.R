@@ -1,6 +1,6 @@
 ###################################################################################
 # Script for Session 5 of the course: Applied multivariate Statistics with R  	  #
-# 						by Ralf B. Schäfer,	WS 2016/17							  #
+# 						by Ralf B. Schäfer,	WS 2018/19							  #
 # 						Redundancy Discrimnant Analysis					  		  #
 ###################################################################################
 
@@ -324,7 +324,7 @@ arrows(0, 0, var.sc[, 1], var.sc[, 2], length = 0, lty = 1, col = "red")
 # How many RDA axes are needed?
 # Which variables are most important to explain the community pattern?
 
-RIKZ <- read.table("http://www.uni-koblenz-landau.de/en/campus-landau/faculty7/environmental-sciences/landscape-ecology/Teaching/RIKZ_data/at_download/file", header = TRUE)
+RIKZ <- read.table("https://www.uni-koblenz-landau.de/en/campus-landau/faculty7/environmental-sciences/landscape-ecology/teaching/RIKZ_data/at_download/file", header = TRUE)
 # Species data
 Species <- RIKZ[, 2:5]
 ExplVar <- RIKZ[, 9:15]
