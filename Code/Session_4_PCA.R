@@ -82,7 +82,7 @@ sum(ev)
 # Apply sum criterion
 alpha <- 0.7
 summary(va_pca)$cont$importance[3, ] > alpha
-# 2 axes needed in order to explain 70% of variance
+# 3 axes needed in order to explain 70% of variance
 
 # Apply screeplot
 par(mfrow = c(1, 1))
