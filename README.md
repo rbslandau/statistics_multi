@@ -21,12 +21,8 @@ install.packages("package_name")
 
 ### Links to videos for students that take the course with compulsory attendance (not online students!)
 
-The videos contain with quiz questions. **Important**: You need to be logged in
+The videos contain quiz questions. **Important**: You need to be logged in
 to access these questions. See the *Tutorial* in the course materials how to log into the system. Instead of R tutorials, these sessions come with R videos and scripts.
-
-[Session 7: Introduction to multivariate analysis and PCA](https://videoakademie.ko-ld.de/Panopto/Pages/Sessions/List.aspx?folderID=664a0177-4379-42c7-a620-df9e9d9a9007)
-
-[Session 8: RDA, distance metrics and NMDS](https://videoakademie.ko-ld.de/Panopto/Pages/Sessions/List.aspx?folderID=b3dfde4c-7308-4ae3-8fb6-2bd9ae370f0c)
 
 [Session 9: Cluster analysis](https://videoakademie.ko-ld.de/Panopto/Pages/Sessions/List.aspx?folderID=7c5bf738-39d6-434f-9ea4-508037c6f4fc)
 
